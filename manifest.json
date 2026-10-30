@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Vanishing Cam",
+  "version": "0.1.0",
+  "description": "Eksperimen efek menghilang untuk Google Meet.",
+  "permissions": [
+    "storage"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_title": "Vanishing Cam"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meet.google.com/*"
+      ],
+      "js": [
+        "src/content/meet-content.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

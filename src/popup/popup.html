@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#111310">
+  <title>Vanishing Cam</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+
+<body>
+  <main class="app-shell">
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="15" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="20" cy="20" r="8" stroke="currentColor" stroke-width="1.2"/>
+            <circle cx="20" cy="20" r="2.5" fill="currentColor"/>
+            <path d="M20 1V8M20 32V39M1 20H8M32 20H39"
+                  stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </div>
+
+        <div class="brand-copy">
+          <span class="brand-name">VANISHING<span>CAM</span></span>
+          <span class="brand-caption">PERSONAL ILLUSION SYSTEM</span>
+        </div>
+      </div>
+
+      <div class="version-tag">01 / EXP</div>
+    </header>
+
+    <section class="hero">
+      <div class="hero-topline">
+        <span class="eyebrow">OPTICAL ENGINE</span>
+        <span class="live-indicator">
+          <span class="live-dot"></span>
+          <span id="engineLabel">STANDBY</span>
+        </span>
+      </div>
+
+      <div class="illusion-stage" id="illusionStage">
+        <div class="orbit orbit-outer"></div>
+        <div class="orbit orbit-middle"></div>
+        <div class="orbit orbit-inner"></div>
+
+        <div class="crosshair crosshair-top"></div>
+        <div class="crosshair crosshair-bottom"></div>
+        <div class="crosshair crosshair-left"></div>
+        <div class="crosshair crosshair-right"></div>
+
+        <div class="subject-figure" id="subjectFigure">
+          <svg viewBox="0 0 100 130" fill="none" aria-hidden="true">
+            <circle cx="50" cy="29" r="17"
+                    stroke="currentColor" stroke-width="1.5"/>
+            <path d="M22 112V99C22 78 34 65 50 65C66 65 78 78 78 99V112"
+                  stroke="currentColor" stroke-width="1.5"/>
+            <path d="M36 67L50 83L64 67"
+                  stroke="currentColor" stroke-width="1.2"/>
+            <path d="M50 83V111"
+                  stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </div>
+
+        <div class="stage-label stage-label-left">SUBJECT_01</div>
+        <div class="stage-label stage-label-right">LIVE PREVIEW</div>
+
+        <div class="stage-center-label" id="stageCenterLabel">
+          READY
+        </div>
+      </div>
+
+      <div class="hero-footer">
+        <div>
+          <span class="micro-label">CURRENT MODE</span>
+          <div class="mode-name" id="modeName">Visible</div>
+        </div>
+
+        <div class="mode-symbol" id="modeSymbol" aria-hidden="true">
+          ◉
+        </div>
+      </div>
+    </section>
+
+    <section class="control-section">
+      <div class="section-heading">
+        <span class="eyebrow">01 — CONTROLS</span>
+        <span class="section-note">MANUAL</span>
+      </div>
+
+      <div class="mode-controls">
+        <button class="mode-button" id="hideButton" type="button">
+          <span class="mode-button-icon" aria-hidden="true">⊘</span>
+          <span class="mode-button-copy">
+            <strong>Vanish</strong>
+            <small>Disappear</small>
+          </span>
+          <span class="selection-mark" aria-hidden="true"></span>
+        </button>
+
+        <button class="mode-button selected" id="showButton" type="button">
+          <span class="mode-button-icon" aria-hidden="true">◎</span>
+          <span class="mode-button-copy">
+            <strong>Reveal</strong>
+            <small>Reappear</small>
+          </span>
+          <span class="selection-mark" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <button class="power-button" id="toggleButton" type="button">
+        <span class="power-icon" aria-hidden="true">↗</span>
+        <span id="toggleLabel">Initialize system</span>
+        <span class="power-arrow" aria-hidden="true">→</span>
+      </button>
+    </section>
+
+    <section class="system-status">
+      <div class="status-heading">
+        <span class="eyebrow">SYSTEM REPORT</span>
+        <span class="status-code" id="statusCode">SYS / 00</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-light" id="statusLight"></span>
+        <div class="status-copy">
+          <strong id="statusText">Interface initialized</strong>
+          <span id="statusDescription">
+            Video engine is not connected.
+          </span>
+        </div>
+        <span class="status-badge" id="statusBadge">IDLE</span>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>DESIGNED TO DISAPPEAR.</span>
+      <span>V 0.2.0</span>
+    </footer>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>

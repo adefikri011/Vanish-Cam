@@ -1,0 +1,23 @@
+# Sistem operasi
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+
+# Python, jika nanti digunakan untuk eksperimen terpisah
+__pycache__/
+*.pyc
+.venv/
+
+# Log
+*.log
+
+# File sementara
+*.tmp
+*.bak
+
+# Hasil pengujian
+coverage/
+dist/
+build/
