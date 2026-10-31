@@ -1,0 +1,28 @@
+{
+  "name": "vanish-cam",
+  "version": "1.0.0",
+  "description": "Vanishing Cam adalah proyek eksperimental ekstensi Google Chrome untuk mengembangkan efek menghilangkan tubuh dari video Google Meet sambil mempertahankan latar belakang ruangan.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adefikri011/Vanish-Cam.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/adefikri011/Vanish-Cam/issues"
+  },
+  "homepage": "https://github.com/adefikri011/Vanish-Cam#readme",
+  "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.0"
+  }
+}

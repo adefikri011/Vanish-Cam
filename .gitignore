@@ -5,6 +5,9 @@ Thumbs.db
 # Editor
 .vscode/
 
+# JavaScript dependencies
+node_modules/
+
 # Python, jika nanti digunakan untuk eksperimen terpisah
 __pycache__/
 *.pyc

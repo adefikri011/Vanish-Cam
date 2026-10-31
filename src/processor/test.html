@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanishing Cam — Segmentation Test</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 32px;
+            background: #0b0d12;
+            color: #f4f5f7;
+            font: 15px/1.5 system-ui, sans-serif;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        p {
+            color: #a5adbb;
+        }
+
+        .preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .panel {
+            padding: 12px;
+            background: #151923;
+            border: 1px solid #2a3040;
+            border-radius: 14px;
+        }
+
+        .panel h2 {
+            font-size: 15px;
+        }
+
+        video,
+        canvas {
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+            background: #080a0e;
+            border-radius: 8px;
+        }
+
+        button {
+            margin: 8px 8px 8px 0;
+            padding: 11px 16px;
+            border: 0;
+            border-radius: 9px;
+            background: #a7f36b;
+            color: #11150c;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: .5;
+            cursor: wait;
+        }
+
+        #status {
+            padding: 12px;
+            background: #151923;
+            border-radius: 8px;
+            overflow-wrap: anywhere;
+        }
+
+        .hint {
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Vanishing Cam</h1>
+        <p>Pengujian kamera dan deteksi tubuh menggunakan MediaPipe.</p>
+
+        <button id="startButton">Mulai Pengujian</button>
+        <button id="stopButton" disabled>Hentikan Kamera</button>
+
+        <button id="captureButton" disabled>Capture Background</button>
+        <button id="vanishButton" disabled>Vanish</button>
+        <button id="revealButton" disabled>Reveal</button>
+
+        <div id="status" role="status">Status: belum dimulai.</div>
+
+        <section class="preview">
+            <div class="panel">
+                <h2>1. Kamera Asli</h2>
+                <video id="camera" autoplay muted playsinline></video>
+            </div>
+
+            <div class="panel">
+                <h2>2. Mask Deteksi Tubuh</h2>
+                <canvas id="mask"></canvas>
+            </div>
+
+            <div class="panel">
+                <h2>3. Hasil Vanishing Cam</h2>
+                <canvas id="output"></canvas>
+            </div>
+        </section>
+
+
+        <p class="hint">
+            Untuk hasil yang benar, kosongkan frame sebelum menekan Capture Background.
+            Setelah background tersimpan, masuk kembali ke frame dan tekan Vanish
+            untuk melihat animasi pixel dissolve. Tes ini hanya mengubah preview
+            lokal, bukan video Google Meet.
+        </p>
+    </main>
+
+    <script type="module" src="./test.js"></script>
+</body>
+
+</html>
