@@ -372,6 +372,28 @@
       return;
     }
 
+    if (command === "TOGGLE_STATE") {
+      const nextMode = state.mode === "invisible" ? "visible" : "invisible";
+
+      if (nextMode === "invisible" && !activePipeline?.backgroundCaptured) {
+        respond(requestId, {
+          success: false,
+          error: "Rekam background kosong terlebih dahulu melalui popup."
+        });
+        return;
+      }
+
+      state.enabled = true;
+      state.mode = nextMode;
+      publishStatus();
+      respond(requestId, {
+        success: true,
+        state: { ...state },
+        pipeline: getPipelineStatus()
+      });
+      return;
+    }
+
     if (command === "SET_STATE") {
       if (
         !payload ||
@@ -379,28 +401,6 @@
         !["visible", "invisible"].includes(payload.mode)
       ) {
         respond(requestId, { success: false, error: "State efek tidak valid." });
-        return;
-      }
-
-      if (command === "TOGGLE_STATE") {
-        const nextMode = state.mode === "invisible" ? "visible" : "invisible";
-
-        if (nextMode === "invisible" && !activePipeline?.backgroundCaptured) {
-          respond(requestId, {
-            success: false,
-            error: "Rekam background kosong terlebih dahulu melalui popup."
-          });
-          return;
-        }
-
-        state.enabled = true;
-        state.mode = nextMode;
-        publishStatus();
-        respond(requestId, {
-          success: true,
-          state: { ...state },
-          pipeline: getPipelineStatus()
-        });
         return;
       }
 
