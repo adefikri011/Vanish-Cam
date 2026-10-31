@@ -12,12 +12,15 @@ const elements = {
   statusBadge: document.getElementById("statusBadge"),
   statusLight: document.getElementById("statusLight"),
   systemStatus: document.querySelector(".system-status"),
-
-  engineLabel: document.getElementById("engineLabel"),
-  illusionStage: document.getElementById("illusionStage"),
-  stageCenterLabel: document.getElementById("stageCenterLabel"),
-  modeName: document.getElementById("modeName"),
-  modeSymbol: document.getElementById("modeSymbol"),
+  stepConnect: document.getElementById("stepConnect"),
+  stepBackground: document.getElementById("stepBackground"),
+  stepEffect: document.getElementById("stepEffect"),
+  stepperConnect: document.getElementById("stepperConnect"),
+  stepperBackground: document.getElementById("stepperBackground"),
+  stepperEffect: document.getElementById("stepperEffect"),
+  backButton: document.getElementById("backButton"),
+  nextButton: document.getElementById("nextButton"),
+  stepCaption: document.getElementById("stepCaption"),
 
   toast: document.getElementById("toast")
 };
@@ -28,8 +31,8 @@ const DEFAULT_STATE = {
 };
 
 let toastTimer;
-let animationTimer;
 let renderRequest = 0;
+let wizardStep = null;
 
 /* ----------------------------------------
    STATE MANAGEMENT
@@ -64,34 +67,6 @@ function showToast(message) {
 }
 
 /* ----------------------------------------
-   VISUAL TRANSITIONS
----------------------------------------- */
-
-function playTransition(mode) {
-  const stage = elements.illusionStage;
-
-  if (!stage) return;
-
-  stage.classList.remove("is-transitioning");
-
-  // Memulai ulang animasi CSS.
-  void stage.offsetWidth;
-
-  stage.classList.add("is-transitioning");
-
-  clearTimeout(animationTimer);
-
-  animationTimer = setTimeout(() => {
-    stage.classList.remove("is-transitioning");
-  }, 450);
-
-  stage.classList.toggle(
-    "is-invisible",
-    mode === "invisible"
-  );
-}
-
-/* ----------------------------------------
    MODE CONTROLS
 ---------------------------------------- */
 
@@ -108,23 +83,48 @@ function updateModeControls(mode) {
     !invisible
   );
 
-  if (elements.modeName) {
-    elements.modeName.textContent = invisible
-      ? "Invisible"
-      : "Visible";
-  }
+  elements.hideButton?.setAttribute("aria-pressed", String(invisible));
+  elements.showButton?.setAttribute("aria-pressed", String(!invisible));
+}
 
-  if (elements.modeSymbol) {
-    elements.modeSymbol.textContent = invisible
-      ? "⊘"
-      : "◉";
-  }
+function renderWizardStep() {
+  const cards = [
+    elements.stepConnect,
+    elements.stepBackground,
+    elements.stepEffect
+  ];
+  const indicators = [
+    elements.stepperConnect,
+    elements.stepperBackground,
+    elements.stepperEffect
+  ];
 
-  if (elements.stageCenterLabel) {
-    elements.stageCenterLabel.textContent = invisible
-      ? "SUBJECT ABSENT"
-      : "SUBJECT PRESENT";
-  }
+  cards.forEach((card, index) => {
+    card.hidden = index !== wizardStep;
+    card.dataset.wizardActive = String(index === wizardStep);
+  });
+
+  indicators.forEach((indicator, index) => {
+    if (index === wizardStep) {
+      indicator.setAttribute("aria-current", "step");
+    } else {
+      indicator.removeAttribute("aria-current");
+    }
+
+    indicator.dataset.stepState = index < wizardStep
+      ? "complete"
+      : index === wizardStep
+        ? "current"
+        : "upcoming";
+  });
+
+  elements.backButton.disabled = wizardStep === 0;
+  elements.nextButton.hidden = wizardStep === cards.length - 1;
+  elements.nextButton.disabled = false;
+  elements.stepCaption.textContent = `Langkah ${wizardStep + 1} dari ${cards.length}`;
+  elements.nextButton.innerHTML = wizardStep === 1
+    ? 'Lanjut ke efek <span aria-hidden="true">→</span>'
+    : 'Lanjut <span aria-hidden="true">→</span>';
 }
 
 /* ----------------------------------------
@@ -256,123 +256,123 @@ async function captureMeetBackground() {
 function updateStatus(state, meetStatus = null) {
   const { enabled, mode } = state;
   const pipeline = meetStatus?.pipeline;
+  const meetDetected = Boolean(meetStatus?.success);
+  const cameraReady = Boolean(pipeline?.processedTrackReturned);
+  const segmentationReady = Boolean(pipeline?.segmentationReady);
+  const backgroundReady = Boolean(pipeline?.backgroundCaptured);
+  const effectReady = enabled && cameraReady && segmentationReady && backgroundReady;
+  const progressStep = backgroundReady
+    ? 2
+    : enabled && cameraReady && segmentationReady
+      ? 1
+      : 0;
 
-  elements.toggleButton?.classList.toggle(
-    "is-enabled",
-    enabled
-  );
+  if (wizardStep === null) {
+    wizardStep = progressStep;
+  }
 
   if (elements.toggleLabel) {
     elements.toggleLabel.textContent = enabled
-      ? "Disable controls"
-      : "Initialize system";
-  }
-
-  if (elements.engineLabel) {
-    elements.engineLabel.textContent = enabled
-      ? "ARMED"
-      : "STANDBY";
+      ? "Matikan kontrol"
+      : "Aktifkan kontrol";
   }
 
   if (elements.systemStatus) {
-    elements.systemStatus.dataset.state = enabled
-      ? "selected"
-      : "idle";
+    elements.systemStatus.dataset.state = meetStatus?.success
+      ? pipeline?.error
+        ? "error"
+        : effectReady
+          ? "selected"
+          : "idle"
+      : "error";
   }
 
   if (elements.statusLight) {
-    elements.statusLight.classList.toggle(
-      "is-active",
-      enabled
+    elements.statusLight.classList.toggle("is-active", effectReady);
+  }
+
+  if (!meetDetected) {
+    elements.statusText.textContent = "Google Meet belum terhubung";
+    elements.statusDescription.textContent =
+      meetStatus?.error ?? "Buka tab Google Meet lalu refresh halaman.";
+  } else if (pipeline?.error) {
+    elements.statusText.textContent = "Perlu pemeriksaan";
+    elements.statusDescription.textContent = pipeline.error;
+  } else if (!cameraReady) {
+    elements.statusText.textContent = "Nyalakan kamera Meet";
+    elements.statusDescription.textContent =
+      "Setelah kamera aktif, tunggu track dan segmentasi siap.";
+  } else if (!segmentationReady) {
+    elements.statusText.textContent = "Menyiapkan segmentasi";
+    elements.statusDescription.textContent =
+      "Model sedang memproses video kamera.";
+  } else if (!backgroundReady) {
+    elements.statusText.textContent = "Siap merekam background";
+    elements.statusDescription.textContent =
+      "Keluar dari frame, lalu rekam ruangan kosong.";
+  } else if (effectReady) {
+    elements.statusText.textContent = mode === "invisible"
+      ? "Mode Vanish aktif"
+      : "Siap digunakan";
+    elements.statusDescription.textContent = mode === "invisible"
+      ? "Tekan Reveal atau Ctrl + Shift + Y untuk kembali."
+      : "Gunakan tombol Vanish atau shortcut Ctrl + Shift + Y.";
+  } else {
+    elements.statusText.textContent = "Aktifkan kontrol untuk melanjutkan";
+    elements.statusDescription.textContent =
+      "Video diproses lokal; peserta lain perlu memverifikasi keluaran.";
+  }
+
+  if (elements.statusBadge) {
+    elements.statusBadge.textContent = !meetDetected
+      ? "MEET OFFLINE"
+      : pipeline?.error
+        ? "ERROR"
+        : backgroundReady
+          ? "READY"
+          : cameraReady
+            ? "CAMERA"
+            : "MEET OPEN";
+  }
+
+  if (elements.statusCode) {
+    elements.statusCode.textContent = !meetDetected
+      ? "MEET / --"
+      : pipeline?.processedTrackReturned
+        ? "TRACK / OUT"
+        : "MEET / OK";
+  }
+
+  if (elements.captureButton) {
+    elements.captureButton.disabled = !(
+      cameraReady && segmentationReady && enabled
     );
   }
 
-  if (enabled) {
-    if (elements.statusText) {
-      elements.statusText.textContent =
-        mode === "invisible"
-          ? "Invisible mode selected"
-          : "Visible mode selected";
-    }
-
-    if (elements.statusDescription) {
-      elements.statusDescription.textContent =
-        "Visual mode selected. Video processing is not connected.";
-    }
-
-    if (elements.statusCode) {
-      elements.statusCode.textContent = "SYS / 01";
-    }
-
-    if (elements.statusBadge) {
-      elements.statusBadge.textContent = "STANDBY";
-    }
-  } else {
-    if (elements.statusText) {
-      elements.statusText.textContent = "System on standby";
-    }
-
-    if (elements.statusDescription) {
-      elements.statusDescription.textContent =
-        "Initialize controls to begin the experiment.";
-    }
-
-    if (elements.statusCode) {
-      elements.statusCode.textContent = "SYS / 00";
-    }
-
-    if (elements.statusBadge) {
-      elements.statusBadge.textContent = "IDLE";
-    }
+  if (elements.captureLabel) {
+    elements.captureLabel.textContent = backgroundReady
+      ? "Rekam ulang background"
+      : "Rekam background kosong";
   }
 
-  // Status koneksi Meet ditampilkan terpisah dari status mesin video.
-  if (meetStatus) {
-    if (elements.statusDescription) {
-      if (!meetStatus.success) {
-        elements.statusDescription.textContent = meetStatus.error;
-      } else if (pipeline?.error) {
-        elements.statusDescription.textContent = pipeline.error;
-      } else if (!pipeline?.cameraAcquired) {
-        elements.statusDescription.textContent =
-          "Meet terdeteksi. Aktifkan kamera untuk menyiapkan video terproses.";
-      } else if (!pipeline.processedTrackReturned) {
-        elements.statusDescription.textContent =
-          "Kamera ditemukan; track hasil proses belum dikembalikan ke Meet.";
-      } else if (!pipeline.segmentationReady) {
-        elements.statusDescription.textContent =
-          "Track hasil proses aktif; menunggu segmentasi MediaPipe.";
-      } else if (!pipeline.backgroundCaptured) {
-        elements.statusDescription.textContent =
-          "Track terproses siap. Rekam background saat frame kosong.";
-      } else {
-        elements.statusDescription.textContent =
-          "Track terproses dikembalikan ke Meet. Minta peserta lain memverifikasi efek.";
-      }
-    }
+  elements.hideButton.disabled = !effectReady;
+  elements.showButton.disabled = !effectReady;
 
-    if (elements.statusCode) {
-      elements.statusCode.textContent = !meetStatus.success
-        ? "MEET / --"
-        : pipeline?.processedTrackReturned
-          ? "TRACK / OUT"
-          : pipeline?.cameraAcquired
-            ? "CAMERA / OK"
-            : "MEET / OK";
-    }
+  elements.stepConnect.dataset.stepState = enabled && cameraReady
+    ? "complete"
+    : meetDetected
+      ? "current"
+      : "upcoming";
+  elements.stepBackground.dataset.stepState = backgroundReady
+    ? "complete"
+    : cameraReady && segmentationReady && enabled
+      ? "current"
+      : "upcoming";
+  elements.stepEffect.dataset.stepState = backgroundReady
+    ? "current"
+    : "upcoming";
 
-    if (elements.statusBadge) {
-      elements.statusBadge.textContent = !meetStatus.success
-        ? "OFFLINE"
-        : pipeline?.error
-          ? "ERROR"
-          : pipeline?.processedTrackReturned
-            ? "TRACK"
-            : pipeline?.cameraAcquired
-              ? "CAMERA"
-              : "HOOK";
-    }
-  }
+  renderWizardStep();
 }
 
 /* ----------------------------------------
@@ -385,10 +385,6 @@ async function render() {
   const state = await getState();
 
   updateModeControls(state.mode);
-  playTransition(state.mode);
-
-  // Tampilkan status lokal terlebih dahulu.
-  updateStatus(state);
 
   const meetStatus = await pingGoogleMeet();
 
@@ -425,8 +421,8 @@ async function setMode(mode) {
 
   showToast(
     mode === "invisible"
-      ? "Invisible mode selected."
-      : "Visible mode selected."
+      ? "Mode Vanish aktif."
+      : "Mode Reveal aktif."
   );
 }
 
@@ -456,8 +452,8 @@ elements.toggleButton?.addEventListener(
 
     showToast(
       nextState.enabled
-        ? "Controls initialized."
-        : "Controls set to standby."
+        ? "Kontrol Vanishing Cam aktif."
+        : "Kontrol Vanishing Cam dimatikan."
     );
   }
 );
@@ -482,9 +478,24 @@ elements.captureButton?.addEventListener(
       return;
     }
 
+    await render();
     showToast("Background berhasil ditangkap.");
   }
 );
+
+elements.backButton?.addEventListener("click", () => {
+  if (wizardStep > 0) {
+    wizardStep--;
+    renderWizardStep();
+  }
+});
+
+elements.nextButton?.addEventListener("click", () => {
+  if (wizardStep < 2) {
+    wizardStep++;
+    renderWizardStep();
+  }
+});
 
 /* ----------------------------------------
    STORAGE SYNCHRONIZATION
@@ -533,3 +544,12 @@ render().catch((error) => {
     elements.statusBadge.textContent = "ERROR";
   }
 });
+
+setInterval(() => {
+  render().catch((error) => {
+    console.error(
+      "[Vanishing Cam] Status refresh failed:",
+      error
+    );
+  });
+}, 2000);
